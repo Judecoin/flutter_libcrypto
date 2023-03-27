@@ -1,6 +1,6 @@
 name: xrp
 description: XRP blockchain implementation in dart
-version: 0.0.1
+version: 0.0.2
 repository: https://github.com/Imdavyking/xrp
 issue_tracker: https://github.com/Imdavyking/xrp/issues
 
