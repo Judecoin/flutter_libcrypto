@@ -29,8 +29,8 @@ flutter pub add xrp
 const mnemonic =
         'express crane road good warm suggest genre organ cradle tuition strike manual';
 Map xrpDetails = XRP.fromMnemonic(mnemonic);
-// xrpDetails['address']
-// xrpDetails['privateKey']
+final xrpAddress = xrpDetails['address'];
+final xrpPrivateKey = xrpDetails['privateKey'];
 
 
 bool isValidXRPAddress =
