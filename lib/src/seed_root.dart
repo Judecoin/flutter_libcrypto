@@ -5,9 +5,9 @@ import 'dart:typed_data';
 class SeedPhraseRoot {
   late Uint8List seed;
   late bip32.BIP32 root;
-  SeedPhraseRoot(Uint8List _seed, bip32.BIP32 _root) {
-    seed = _seed;
-    root = _root;
+  SeedPhraseRoot(Uint8List seed_, bip32.BIP32 root_) {
+    seed = seed_;
+    root = root_;
   }
 }
 
