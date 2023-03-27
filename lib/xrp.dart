@@ -71,7 +71,7 @@ class XRP {
     }
   }
 
-  Future<int> getBalance(String address, XRPCluster xrpCluster) async {
+  static Future<int> getBalance(String address, XRPCluster xrpCluster) async {
     String rpc = 'https://s1.ripple.com:51234/';
     switch (xrpCluster) {
       case XRPCluster.mainNet:
