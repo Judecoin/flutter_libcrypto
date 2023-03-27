@@ -35,6 +35,10 @@ final xrpPrivateKey = xrpDetails['privateKey'];
 
 bool isValidXRPAddress =
         XRP.isValidAddress('rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+
+bool getDrops =
+        await XRP.getBalance('rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+
 ```
 
 ## Additional information
