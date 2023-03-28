@@ -107,7 +107,7 @@ class XRP {
       throw Exception('Account not found');
     }
 
-    return accountInfo['result']['account_data']['Balance'];
+    return int.parse(accountInfo['result']['account_data']['Balance']);
   }
 }
 

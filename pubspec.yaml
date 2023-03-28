@@ -1,6 +1,6 @@
 name: xrp
-description: Flutter XRP package is a software library that allows developers to integrate XRP functionality into their Flutter applications. XRP is a digital asset and cryptocurrency that is designed to facilitate fast and efficient cross-border payments. 
-version: 0.0.2
+description: Flutter XRP package is a software library that allows developers to integrate XRP functionality into their Flutter applications.
+version: 0.0.3
 repository: https://github.com/Imdavyking/xrp
 issue_tracker: https://github.com/Imdavyking/xrp/issues
 

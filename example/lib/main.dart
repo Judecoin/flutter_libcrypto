@@ -48,14 +48,14 @@ class _MyHomePageState extends State<MyHomePage> {
           if (kDebugMode) print(xrpPrivateKey);
 
           bool isValidXRPAddress =
-              XRP.isValidAddress('rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+              XRP.isValidAddress('r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu');
 
           if (kDebugMode) {
             print(isValidXRPAddress);
           }
 
           int getDrops = await XRP.getBalance(
-            'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL',
+            'r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu',
             XRPCluster.mainNet,
           );
 
