@@ -29,39 +29,42 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final userAddress = '0x6Acf5505DF3Eada0BF0547FAb88a85b1A2e03F15';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Blockies'),
+        title: const Text('XRP'),
       ),
-      body: ElevatedButton(
-        onPressed: () async {
-          const mnemonic =
-              'express crane road good warm suggest genre organ cradle tuition strike manual';
-          Map xrpDetails = XRP.fromMnemonic(mnemonic);
-          final xrpAddress = xrpDetails['address'];
-          final xrpPrivateKey = xrpDetails['privateKey'];
+      body: SizedBox(
+        width: 100,
+        height: 50,
+        child: ElevatedButton(
+          onPressed: () async {
+            const mnemonic =
+                'express crane road good warm suggest genre organ cradle tuition strike manual';
+            Map xrpDetails = XRP.fromMnemonic(mnemonic);
+            final xrpAddress = xrpDetails['address'];
+            final xrpPrivateKey = xrpDetails['privateKey'];
 
-          if (kDebugMode) print(xrpAddress);
-          if (kDebugMode) print(xrpPrivateKey);
+            if (kDebugMode) print(xrpAddress);
+            if (kDebugMode) print(xrpPrivateKey);
 
-          bool isValidXRPAddress =
-              XRP.isValidAddress('r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu');
+            bool isValidXRPAddress =
+                XRP.isValidAddress('r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu');
 
-          if (kDebugMode) {
-            print(isValidXRPAddress);
-          }
+            if (kDebugMode) {
+              print(isValidXRPAddress);
+            }
 
-          int getDrops = await XRP.getBalance(
-            'r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu',
-            XRPCluster.mainNet,
-          );
+            int getDrops = await XRP.getBalance(
+              'r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu',
+              XRPCluster.mainNet,
+            );
 
-          if (kDebugMode) print(getDrops);
-        },
-        child: Container(),
+            if (kDebugMode) print(getDrops);
+          },
+          child: const Text('click me'),
+        ),
       ),
     );
   }
