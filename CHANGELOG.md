@@ -5,3 +5,8 @@
 
 * fixed getBalance function.
 * added example
+
+## 0.0.3
+
+* fixed getBalance throwing exception.
+* change example address
