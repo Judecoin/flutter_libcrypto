@@ -1,15 +1,11 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, prefer_const_declarations
 
-import 'dart:convert';
-
 import 'package:algorand_dart/algorand_dart.dart';
-import 'package:bitcoin_flutter/bitcoin_flutter.dart';
 import '../xrp.dart';
 import 'xrp_definitions.dart';
 import 'xrp_ordinal.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
-import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:hex/hex.dart';
 import 'package:web3dart/crypto.dart';
 
@@ -203,8 +199,8 @@ Uint8List _toUint32(int value) {
 }
 
 Uint8List _toAmount(int value) {
-  const _POS_SIGN_BIT_MASK = 0x4000000000000000;
-  final valueWithPosBit = value | _POS_SIGN_BIT_MASK;
+  const POS_SIGN_BIT_MASK = 0x4000000000000000;
+  final valueWithPosBit = value | POS_SIGN_BIT_MASK;
   var buffer = ByteData(8);
   buffer.setInt64(0, valueWithPosBit);
   return buffer.buffer.asUint8List();
