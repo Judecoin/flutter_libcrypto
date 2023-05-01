@@ -28,17 +28,22 @@ flutter pub add xrp
 ```dart
 const mnemonic =
         'express crane road good warm suggest genre organ cradle tuition strike manual';
-Map xrpDetails = XRP.fromMnemonic(mnemonic);
-final xrpAddress = xrpDetails['address'];
-final xrpPrivateKey = xrpDetails['privateKey'];
+XRPAccount xrpDetails = XRP.fromMnemonic(mnemonic);
+final xrpAddress = xrpDetails.address;
+final xrpPrivateKey = xrpDetails.privateKey;
+
+final demoAddr = 'rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL';
 
 
 bool isValidXRPAddress =
-        XRP.isValidAddress('rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+        XRP.isValidAddress(demoAddr);
 
 int getDrops =
-        await XRP.getBalance('rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL');
+        await XRP.getBalance(demoAddr);
 
+bool getTestnetFaucet = await XRP.fundRippleTestnet("rQfZM9WRQJmTJeGroRC9pSyEC3jYeXKfuL");
+
+String txHash = await XRP.transferToken('100',demoAddr,xrpDetails, XRPCluster.testNet);
 ```
 
 ## Additional information

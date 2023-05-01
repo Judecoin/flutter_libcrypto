@@ -42,9 +42,9 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: () async {
             const mnemonic =
                 'express crane road good warm suggest genre organ cradle tuition strike manual';
-            Map xrpDetails = XRP.fromMnemonic(mnemonic);
-            final xrpAddress = xrpDetails['address'];
-            final xrpPrivateKey = xrpDetails['privateKey'];
+            XRPAccount xrpDetails = XRP.fromMnemonic(mnemonic);
+            final xrpAddress = xrpDetails.address;
+            final xrpPrivateKey = xrpDetails.privateKey;
 
             if (kDebugMode) print(xrpAddress);
             if (kDebugMode) print(xrpPrivateKey);
