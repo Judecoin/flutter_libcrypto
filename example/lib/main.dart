@@ -7,7 +7,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+  const MyHomePage({Key key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -40,28 +40,59 @@ class _MyHomePageState extends State<MyHomePage> {
         height: 50,
         child: ElevatedButton(
           onPressed: () async {
-            const mnemonic =
-                'express crane road good warm suggest genre organ cradle tuition strike manual';
+            final mnemonic = XRP.generateMnemonic();
+            final mnemonicReceiver = XRP.generateMnemonic();
+            if (kDebugMode) {
+              print("mnemonic: $mnemonic");
+            }
             XRPAccount xrpDetails = XRP.fromMnemonic(mnemonic);
+            XRPAccount xrpDetailsReceiver = XRP.fromMnemonic(mnemonicReceiver);
             final xrpAddress = xrpDetails.address;
             final xrpPrivateKey = xrpDetails.privateKey;
-
-            if (kDebugMode) print(xrpAddress);
-            if (kDebugMode) print(xrpPrivateKey);
-
-            bool isValidXRPAddress =
-                XRP.isValidAddress('r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu');
-
             if (kDebugMode) {
-              print(isValidXRPAddress);
+              print("Sender Address: $xrpAddress");
+              print("Sender Private Key: $xrpPrivateKey");
+              print("Receiver Address: ${xrpDetailsReceiver.address}");
+              print("Receiver Private Key: ${xrpDetailsReceiver.privateKey}");
             }
 
-            int getDrops = await XRP.getBalance(
-              'r4dgY6Mzob3NVq8CFYdEiPnXKboRScsXRu',
-              XRPCluster.mainNet,
+            bool isValidXRPAddress = XRP.isValidAddress(xrpAddress);
+            if (kDebugMode) {
+              print("isValidXRPAddress: $isValidXRPAddress");
+            }
+            bool getTestnetFaucet = await XRP.fundRippleTestnet(xrpAddress);
+            if (kDebugMode) {
+              print("Funded: $getTestnetFaucet");
+            }
+            int getDrops = await XRP.getBalance(xrpAddress, XRPCluster.testNet);
+
+            if (kDebugMode) {
+              print("Sender account balance Before Sending: $getDrops");
+            }
+
+            String txHash = await XRP.transferToken(
+              amount: '11',
+              to: xrpDetailsReceiver.address,
+              account: xrpDetails,
+              networkType: XRPCluster.testNet,
             );
 
-            if (kDebugMode) print(getDrops);
+            if (kDebugMode) {
+              print("txHash: $txHash");
+            }
+
+            int getDropsAfterSend =
+                await XRP.getBalance(xrpAddress, XRPCluster.testNet);
+
+            if (kDebugMode) {
+              print("Sender account balance After Sending: $getDropsAfterSend");
+            }
+            int getDropsAfterSendReceiver = await XRP.getBalance(
+                xrpDetailsReceiver.address, XRPCluster.testNet);
+
+            if (kDebugMode) {
+              print("Receiver account balance: $getDropsAfterSendReceiver");
+            }
           },
           child: const Text('click me'),
         ),

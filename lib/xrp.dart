@@ -3,7 +3,7 @@ library xrp;
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:base_x/base_x.dart';
 import 'package:crypto/crypto.dart';
 import 'package:hash/hash.dart';
@@ -24,6 +24,10 @@ class XRPAccount {
 }
 
 class XRP {
+  static String generateMnemonic() {
+    return bip39.generateMnemonic();
+  }
+
   static XRPAccount fromMnemonic(String mnemonic) {
     SeedPhraseRoot seedRoot_ = seedFromMnemonic(mnemonic);
     final node = seedRoot_.root.derivePath("m/44'/144'/0'/0/0");
