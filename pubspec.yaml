@@ -1,6 +1,6 @@
 name: xrp
 description: Flutter XRP package is a software library that allows developers to integrate XRP functionality into their Flutter applications.
-version: 0.0.3
+version: 0.0.4
 repository: https://github.com/Imdavyking/xrp
 issue_tracker: https://github.com/Imdavyking/xrp/issues
 
