@@ -10,3 +10,8 @@
 
 * fixed getBalance throwing exception.
 * change example address
+
+## 0.0.4
+
+* added encodeJson,Signtransaction
+* added faucet and transfer tokens
