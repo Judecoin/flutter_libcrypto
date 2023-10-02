@@ -42,16 +42,30 @@ String encodeXrpJson(Map sampleXrpJson) {
     sampleXrpJson['SourceTag'] = sourceXDetails['tag'];
   }
 
+  // List xrpJson = sampleXrpJson.keys.toList();
+  // Map sorted = xrpJson.map((e) {
+  //   return xrpOrdinal[e];
+  // }).toList()
+  //   ..removeWhere((f) {
+  //     return f == null || f['isSerialized'] == null;
+  //   })
+  //   ..sort((a, b) {
+  //     return (a['ordinal'] as num) - (b['ordinal'] as num);
+  //   })
+  // ;
+
   List xrpJson = sampleXrpJson.keys.toList();
-  var sorted = xrpJson.map((e) {
+  final jsonMap = xrpJson.map((e) {
     return xrpOrdinal[e];
-  }).toList()
+  });
+  List sorted = (jsonMap
+      .toList()
     ..removeWhere((f) {
-      return f == null && f['isSerialized'] == null;
-    })
-    ..sort((a, b) {
-      return (a['ordinal'] as num) - (b['ordinal'] as num);
-    });
+      return f == null || f['isSerialized'] == null;
+    })) ?? [];
+  sorted.sort((a, b) {
+    return (a['ordinal'] as int) - (b['ordinal'] as int);
+  });
 
   final fields = rippleDefinitions['FIELDS'] as List;
   Map trxFieldInfo = {};
@@ -63,33 +77,35 @@ String encodeXrpJson(Map sampleXrpJson) {
 
   List serializer = [];
 
-  for (int i = 0; i < sorted.length; i++) {
-    final sortedKeys = sorted[i]['name'];
+  for (int i = 0; i < sorted!.length; i++) {
+    Map indexMap = sorted[i] ?? {};
+    final sortedKeys = indexMap ['name'] ?? "";
 
-    trxFieldInfo[sortedKeys]['ordinal'] = sorted[i]['ordinal'];
-    trxFieldInfo[sortedKeys]['name'] = sorted[i]['name'];
-    trxFieldInfo[sortedKeys]['nth'] = sorted[i]['nth'];
 
+    trxFieldInfo[sortedKeys]['ordinal'] = indexMap['ordinal'] ?? "";
+    trxFieldInfo[sortedKeys]['name'] = indexMap['name'];
+    trxFieldInfo[sortedKeys]['nth'] = indexMap['nth'];
+    //
     final typeCode =
         rippleDefinitions['TYPES'][trxFieldInfo[sortedKeys]['type']];
     final fieldCode = trxFieldInfo[sortedKeys]['nth'];
     final isVariableEncoded = trxFieldInfo[sortedKeys]['isVLEncoded'];
-    Uint8List associatedValue;
+    Uint8List? associatedValue;
 
     if (sortedKeys == 'TransactionType') {
       final transType =
-          rippleDefinitions['TRANSACTION_TYPES'][sampleXrpJson[sortedKeys]];
+          rippleDefinitions['TRANSACTION_TYPES'][sampleXrpJson[sortedKeys]] ?? 0;
       associatedValue = _toUint16(transType);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt32') {
-      associatedValue = _toUint32(sampleXrpJson[sortedKeys]);
+      associatedValue = _toUint32(sampleXrpJson[sortedKeys] ?? 0);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'UInt16') {
-      associatedValue = _toUint32(sampleXrpJson[sortedKeys]);
+      associatedValue = _toUint32(sampleXrpJson[sortedKeys] ?? 0) ;
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Amount') {
-      associatedValue = _toAmount(int.parse(sampleXrpJson[sortedKeys]));
+      associatedValue = _toAmount(int.parse(sampleXrpJson[sortedKeys]) ?? 0);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'AccountID') {
       associatedValue = decodeClassicAddress(sampleXrpJson[sortedKeys]);
     } else if (trxFieldInfo[sortedKeys]['type'] == 'Blob') {
-      associatedValue = HEX.decode(sampleXrpJson[sortedKeys]);
+      associatedValue = Uint8List.fromList(HEX.decode(sampleXrpJson[sortedKeys]));
     }
 
     List<int> header = [];
@@ -110,7 +126,7 @@ String encodeXrpJson(Map sampleXrpJson) {
 
     if (isVariableEncoded) {
       List byte_object = [];
-      byte_object.addAll(associatedValue);
+      byte_object.addAll(associatedValue!);
 
       Uint8List length_prefix =
           _encode_variable_length_prefix(byte_object.length);
@@ -118,7 +134,7 @@ String encodeXrpJson(Map sampleXrpJson) {
       serializer += length_prefix;
       serializer += byte_object;
     } else {
-      serializer.addAll(associatedValue);
+      serializer.addAll(associatedValue!);
     }
   }
   serializer.insertAll(0, xrpTransactionPrefix);
@@ -168,7 +184,7 @@ Map signXrpTransaction(String privateKeyHex, Map xrpTransactionJson) {
   firstsha512 = firstsha512.sublist(0, firstsha512.length ~/ 2);
 
   final signature =
-      _encodeSignatureToDER(sign(firstsha512, HEX.decode(privateKeyHex)));
+      _encodeSignatureToDER(sign(Uint8List.fromList(firstsha512), Uint8List.fromList(HEX.decode(privateKeyHex))));
   xrpTransactionJson['TxnSignature'] = signature;
   return xrpTransactionJson;
 }
@@ -249,7 +265,7 @@ String _encode(Uint8List bytestring, List<int> prefix, int expected_length) {
       .encode(Uint8List.fromList([...payload, ...computedCheckSum]));
 }
 
-int _get_tag_from_buffer(Uint8List buffer) {
+int? _get_tag_from_buffer(Uint8List buffer) {
   int flag = buffer[0];
   if (flag >= 2) {
     throw Exception("Unsupported X-Address");

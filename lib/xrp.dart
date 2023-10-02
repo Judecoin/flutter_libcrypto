@@ -20,7 +20,7 @@ class XRPAccount {
   final String address;
   final String privateKey;
   final String publicKey;
-  const XRPAccount({this.address, this.privateKey, this.publicKey});
+  const XRPAccount({required this.address, required this.privateKey, required this.publicKey});
 }
 
 class XRP {
@@ -33,23 +33,37 @@ class XRP {
     final node = seedRoot_.root.derivePath("m/44'/144'/0'/0/0");
 
     final pubKeyHash = computePublicKeyHash(node.publicKey);
-
+    if(pubKeyHash == null){
+      return XRPAccount(
+          address: "",
+          publicKey: "",
+          privateKey: "",);
+    }
+    // return XRPAccount(
+    //   address: "",
+    //   publicKey: "",
+    //   privateKey: "",);
+    final pubKeyHashList = List<int>.from(pubKeyHash);
     final t = sha256
-        .convert(sha256.convert([0, ...pubKeyHash]).bytes)
+        .convert(sha256.convert([0, ...pubKeyHashList]).bytes)
         .bytes
         .sublist(0, 4);
+    final list = Uint8List.fromList([0, ...pubKeyHashList, ...t]);
 
     String address =
-        xrpBaseCodec.encode(Uint8List.fromList([0, ...pubKeyHash, ...t]));
+        xrpBaseCodec.encode(list);
 
     return XRPAccount(
       address: address,
       publicKey: HEX.encode(node.publicKey),
-      privateKey: HEX.encode(node.privateKey),
+      privateKey: HEX.encode(node.privateKey!),
     );
   }
 
-  static Uint8List computePublicKeyHash(Uint8List publicKeyBytes) {
+  static Uint8List? computePublicKeyHash(Uint8List? publicKeyBytes) {
+    if(publicKeyBytes == null){
+      return null;
+    }
     final hash256 = sha256.convert(publicKeyBytes).bytes;
     final hash160 = RIPEMD160().update(hash256).digest();
 
@@ -57,16 +71,16 @@ class XRP {
   }
 
   static Future<String> transferToken({
-    String amount,
-    String to,
-    XRPAccount account,
-    XRPCluster networkType,
-    String destinationTag,
+    String? amount,
+    String? to,
+    XRPAccount? account,
+    XRPCluster? networkType,
+    String? destinationTag,
   }) async {
     final amountInDrop =
-        BigInt.from(double.parse(amount) * pow(10, xrpDecimals));
+        BigInt.from(double.parse(amount!) * pow(10, xrpDecimals));
 
-    String url = getXRPRpc(networkType);
+    String? url = getXRPRpc(networkType);
 
     if (networkType == null) {
       throw Exception('network type can not be null');
@@ -82,11 +96,11 @@ class XRP {
     }
 
     Map xrpJson = {
-      "Account": account.address,
+      "Account": account!.address,
       "Fee": "10",
       "Sequence": 0,
       "TransactionType": "Payment",
-      "SigningPubKey": account.publicKey,
+      "SigningPubKey": account!.publicKey,
       "Amount": "$amountInDrop",
       "Destination": to
     };
@@ -95,26 +109,26 @@ class XRP {
       xrpJson['DestinationTag'] = destinationTag;
     }
 
-    if (account.address == to) {
+    if (account!.address == to) {
       throw Exception(
         'An XRP payment transaction cannot have the same sender and destination',
       );
     }
 
-    Map ledgers = await getXrpLedgerSequence(account.address, networkType);
+    final ledgers = await getXrpLedgerSequence(account!.address, networkType);
 
-    Map fee = await getXrpFee(networkType);
+    final fee = await getXrpFee(networkType);
 
     if (ledgers != null) {
-      xrpJson = {...xrpJson, ...ledgers};
+      xrpJson = {...xrpJson, ...ledgers!};
     }
     if (fee != null) {
-      xrpJson = {...xrpJson, ...fee};
+      xrpJson = {...xrpJson, ...fee!};
     }
 
-    Map xrpTransaction = signXrpTransaction(account.privateKey, xrpJson);
+    Map xrpTransaction = signXrpTransaction(account!.privateKey, xrpJson);
 
-    final httpFromWs = Uri.parse(url);
+    final httpFromWs = Uri.parse(url!);
     final request = await post(
       httpFromWs,
       headers: {
@@ -142,9 +156,9 @@ class XRP {
   }
 
   static Future<double> getTransactionFee(
-    String amount,
-    String to,
-    XRPCluster networkType,
+    String? amount,
+    String? to,
+    XRPCluster? networkType,
   ) async {
     if (networkType == null) {
       throw Exception('network type can not be null');
@@ -157,11 +171,14 @@ class XRP {
     }
 
     final fee = await getXrpFee(networkType);
-    return double.parse(fee['Fee']) / pow(10, xrpDecimals);
+    return double.parse(fee!['Fee']) / pow(10, xrpDecimals);
   }
 
-  static String getXRPRpc(XRPCluster xrpCluster) {
-    String rpc;
+  static String? getXRPRpc(XRPCluster? xrpCluster) {
+    String? rpc;
+    if(xrpCluster == null){
+      throw Exception("cluster not supported yet");
+    }
     switch (xrpCluster) {
       case XRPCluster.mainNet:
         rpc = 'https://s1.ripple.com:51234/';
@@ -176,7 +193,10 @@ class XRP {
     return rpc;
   }
 
-  static bool seqEqual(Uint8List a, Uint8List b) {
+  static bool seqEqual(Uint8List? a, Uint8List? b) {
+    if(a == null || b == null){
+      return false;
+    }
     if (a.length != b.length) {
       return false;
     }
@@ -188,9 +208,9 @@ class XRP {
     return true;
   }
 
-  static bool isValidAddress(String address) {
+  static bool isValidAddress(String? address) {
     try {
-      final bytes = xrpBaseCodec.decode(address);
+      final bytes = xrpBaseCodec.decode(address!);
 
       final computedCheckSum = sha256
           .convert(sha256.convert(bytes.sublist(0, bytes.length - 4)).bytes)
@@ -207,9 +227,34 @@ class XRP {
     }
   }
 
-  static Future<int> getBalance(String address, XRPCluster xrpCluster) async {
-    String rpc = getXRPRpc(xrpCluster);
-    final httpFromWs = Uri.parse(rpc);
+
+  static Future<Map> getTransactionList(String? address, XRPCluster xrpCluster) async {
+    String? rpc = getXRPRpc(xrpCluster);
+    final httpFromWs = Uri.parse(rpc!);
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        "method": "account_tx",
+        "params": [
+          {"account": address}
+        ]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    Map accountInfo = json.decode(request.body);
+    return accountInfo;
+  }
+
+  static Future<int> getBalance(String? address, XRPCluster xrpCluster) async {
+    String? rpc = getXRPRpc(xrpCluster);
+    final httpFromWs = Uri.parse(rpc!);
     final request = await post(
       httpFromWs,
       headers: {
@@ -230,19 +275,52 @@ class XRP {
     Map accountInfo = json.decode(request.body);
 
     if (accountInfo['result']['account_data'] == null) {
+      //地址金额为空 => 必须发送30以上的 xrp
+      return 0;
       throw Exception('Account not found');
     }
 
     return int.parse(accountInfo['result']['account_data']['Balance']);
   }
 
-  static Future<Map> getXrpLedgerSequence(
-    String address,
-    XRPCluster networkType,
+
+  static Future<dynamic> getRecord(String? address, XRPCluster xrpCluster) async {
+    String? rpc = getXRPRpc(xrpCluster);
+    final httpFromWs = Uri.parse(rpc!);
+
+    final request = await post(
+      httpFromWs,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        "method": "account_tx",
+        "params": [
+          {"account": address}
+        ]
+      }),
+    );
+
+    if (request.statusCode ~/ 100 == 4 || request.statusCode ~/ 100 == 5) {
+      throw Exception(request.body);
+    }
+
+    var accountInfo = json.decode(request.body);
+
+    // if (accountInfo['result']['account_data'] == null) {
+    //   throw Exception('Account not found');
+    // }
+
+    return accountInfo;
+  }
+
+  static Future<Map?> getXrpLedgerSequence(
+    String? address,
+    XRPCluster? networkType,
   ) async {
     try {
-      String rpc = getXRPRpc(networkType);
-      final httpFromWs = Uri.parse(rpc);
+      String? rpc = getXRPRpc(networkType);
+      final httpFromWs = Uri.parse(rpc!);
       final request = await post(
         httpFromWs,
         headers: {
@@ -276,15 +354,19 @@ class XRP {
       };
     } catch (e) {
       return null;
+      // return {
+      //   'Sequence': "",
+      //   'Flags': "",
+      // };
     }
   }
 
-  static Future<Map> getXrpFee(
-    XRPCluster networkType,
+  static Future<Map?> getXrpFee(
+    XRPCluster? networkType,
   ) async {
     try {
-      String rpc = getXRPRpc(networkType);
-      final httpFromWs = Uri.parse(rpc);
+      String? rpc = getXRPRpc(networkType);
+      final httpFromWs = Uri.parse(rpc!);
       final request = await post(
         httpFromWs,
         headers: {
@@ -310,7 +392,7 @@ class XRP {
     }
   }
 
-  static Future<bool> fundRippleTestnet(String address) async {
+  static Future<bool> fundRippleTestnet(String? address) async {
     try {
       const rpc = 'https://faucet.altnet.rippletest.net/accounts';
       final httpFromWs = Uri.parse(rpc);
